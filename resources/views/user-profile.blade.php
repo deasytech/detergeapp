@@ -21,7 +21,6 @@
             <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
               <div class="page-header">
                 <h2 class="pageheader-title">User Profile </h2>
-                <p class="pageheader-text">Proin placerat ante duiullam scelerisque a velit ac porta, fusce sit amet vestibulum mi. Morbi lobortis pulvinar quam.</p>
                 <div class="page-breadcrumb">
                   <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
@@ -44,7 +43,7 @@
                         @php
                         if (presentAvatar(Auth::user()->id)) {
                           $file = presentAvatar(Auth::user()->id);
-                          echo '<img src="' . asset("/storage/avatar/$file") . '" class="img-circle img-thumbnail avatar" alt="'.Auth::user()->name.'">';
+                          echo '<img src="' . asset("avatar/$file") . '" class="img-circle img-thumbnail avatar" alt="'.Auth::user()->name.'">';
                         }else {
                           echo '<img src="http://ssl.gstatic.com/accounts/ui/avatar_2x.png" class="img-circle img-thumbnail avatar" alt="'.Auth::user()->name.'">';
                         }

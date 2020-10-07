@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTables\VendorDataTable;
+use App\DataTables\VendorOrderDataTable;
 use App\Vendor;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Validator;
-use yajra\Datatables\Datatables;
 use App\Order;
 
 class VendorController extends Controller
@@ -20,9 +20,9 @@ class VendorController extends Controller
   *
   * @return \Illuminate\Http\Response
   */
-  public function index()
+  public function index(VendorDataTable $dataTable)
   {
-    return view('pages.vendors.index');
+    return $dataTable->render('pages.vendors.index');
   }
 
   /**
@@ -121,51 +121,9 @@ class VendorController extends Controller
     return redirect()->route('technician.index');
   }
 
-  public function ajaxLoad()
+  public function orders(VendorOrderDataTable $dataTable)
   {
-    $vendor = Vendor::query();
-    return Datatables::of($vendor)
-    ->editColumn('status', function($vendor) {
-      return $vendor->status == 1 ? 'Active' : 'Inactive';
-    })
-    ->addColumn('action', function ($vendor) {
-      return '<a href="'.route('technician.show',$vendor->id).'" class="btn btn-warning btn-xs" data-toggle="tooltip" title="View"><i class="mdi mdi-eye"></i></a>
-      <a href="'.route('technician.edit',$vendor->id).'" class="btn btn-info btn-xs" data-toggle="tooltip" title="Edit"><i class="mdi mdi-table-edit"></i></a>
-      <form method="POST" action="'.route('technician.destroy', $vendor->id).'" style="display: inline-block;">
-      <input type="hidden" name="_token" value="'.csrf_token().'">
-      <input type="hidden" name="_method" value="DELETE">
-      <a href="#" class="btn btn-danger btn-xs" onclick="var c = confirm(\'Are you sure you want to delete this record?\'); if(c == false) return false; else this.parentNode.submit();" class="text-decoration-none p2 display-block on-hover-no-decoration" data-toggle="tooltip" title="Delete" data-toggle="tooltip" title="Delete">
-      <i class="mdi mdi-delete"></i>
-      </a>
-      </form>';
-    })
-    ->orderColumn('created_at', '-created_at $1')
-    ->make(true);
-  }
-
-  public function orders()
-  {
-    $orders = Order::with(['customer','vendor','service'])->where('vendor_id','=',auth()->user()->id)->orderBy('actual_service_date','desc');
-    return Datatables::of($orders)
-    ->editColumn('vendor_id', function($order) {
-      return $order->vendor->name;
-    })
-    ->editColumn('customer_id', function($order) {
-      return $order->customer->name;
-    })
-    ->editColumn('telephone', function($order) {
-      return $order->customer->telephone;
-    })
-    ->editColumn('service_type_id', function($order) {
-      return $order->service->name;
-    })
-    ->editColumn('status', function($order) {
-      return Str::title($order->status);
-    })
-    ->addColumn('action', function ($order) {
-      return '<a href="#" class="btn btn-warning btn-xs" data-id="'.$order->id.'" data-status="'.$order->status.'" data-toggle="modal" data-target="#changeStatus"><i class="mdi mdi-eye"></i></a>';
-    })
-    ->make(true);
+    return $dataTable->render('pages.vendors.vendor-orders');
   }
 
   public function updateStatus(Request $request)

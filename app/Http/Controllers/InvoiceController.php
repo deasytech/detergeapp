@@ -8,6 +8,8 @@ use App\{Customer, Vendor};
 use Illuminate\Http\Request;
 use Validator;
 use yajra\Datatables\Datatables;
+use App\DataTables\InvoiceDataTable;
+use App\DataTables\DueInvoiceDataTable;
 
 class InvoiceController extends Controller
 {
@@ -16,9 +18,9 @@ class InvoiceController extends Controller
   *
   * @return \Illuminate\Http\Response
   */
-  public function index()
+  public function index(InvoiceDataTable $dataTable)
   {
-    return view('pages.accounts.index');
+    return $dataTable->render('pages.accounts.index');
   }
 
   /**
@@ -31,9 +33,9 @@ class InvoiceController extends Controller
     return view('pages.accounts.create');
   }
 
-  public function overdue()
+  public function overdue(DueInvoiceDataTable $dataTable)
   {
-    return view('pages.accounts.overdue');
+    return $dataTable->render('pages.accounts.overdue');
   }
 
   /**
@@ -110,7 +112,8 @@ class InvoiceController extends Controller
   public function show($id)
   {
     $invoice = Invoice::findOrFail($id);
-    return view('pages.accounts.show', compact('invoice'));
+    $last_serviced_cost = Invoice::where([['customer_id','=',$invoice->customer_id],['invoice_date','<',$invoice->invoice_date]])->orderBy('invoice_date', 'desc')->first();
+    return view('pages.accounts.show', compact('invoice','last_serviced_cost'));
   }
 
   /**
@@ -193,103 +196,6 @@ class InvoiceController extends Controller
     $invoice->delete();
 
     return redirect()->route('account.index');
-  }
-
-  public function ajaxLoad()
-  {
-    $invoices = Invoice::with(['services','customer','technician'])->orderBy('created_at', 'desc');
-    return Datatables::of($invoices)
-    ->editColumn('grand_total', function($invoice) {
-      return presentPrice($invoice->grand_total);
-    })
-    ->editColumn('customer_id', function($invoice) {
-      return $invoice->customer->name;
-    })
-    ->editColumn('vendor_id', function($invoice) {
-      return $invoice->technician->name;
-    })
-    ->editColumn('payment_status', function($invoice) {
-      if ($invoice->payment_status == 'transfer') {
-        $transfer = 'Bank ' . $invoice->payment_status;
-        return title_case($transfer);
-      }
-      if ($invoice->payment_status == 'online') {
-        $online = $invoice->payment_status . ' Payment';
-        return title_case($online);
-      }
-      if ($invoice->payment_status == 'paid') {
-        $paid = $invoice->payment_status . ' Cash';
-        return title_case($paid);
-      }
-      return title_case($invoice->payment_status);
-    })
-    ->editColumn('created_at', function($invoice) {
-      return $invoice->created_at->diffForHumans();
-    })
-    ->addColumn('action', function ($invoice) {
-      return '<a href="'.route('account.show',$invoice->id).'" class="btn btn-warning btn-xs" data-toggle="tooltip" title="View"><i class="mdi mdi-eye"></i></a>
-      <a href="'.route('account.edit',$invoice).'" class="btn btn-info btn-xs" data-toggle="tooltip" title="Edit"><i class="mdi mdi-table-edit"></i></a>
-      <a href="#" data-id="'.$invoice->id.'" data-status="'.$invoice->payment_status.'" class="btn btn-dark btn-xs" data-toggle="modal" data-target="#pay" title="Pay"><i class="mdi mdi-cash"></i></a>
-      <form method="POST" action="'.route('account.destroy', $invoice).'" style="display: inline-block;">
-      <input type="hidden" name="_token" value="'.csrf_token().'">
-      <input type="hidden" name="_method" value="DELETE">
-      <a href="#" class="btn btn-danger btn-xs" onclick="var c = confirm(\'Are you sure you want to delete this record?\'); if(c == false) return false; else this.parentNode.submit();" class="text-decoration-none p2 display-block on-hover-no-decoration" data-toggle="tooltip" title="Delete" data-toggle="tooltip" title="Delete">
-      <i class="mdi mdi-delete"></i>
-      </a>
-      </form>';
-    })
-    ->rawColumns(['action'])
-    ->addIndexColumn()
-    ->make(true);
-  }
-
-  public function ajaxLoadOverdue()
-  {
-    $today = date('Y-m-d');
-    $invoices = Invoice::with(['services','customer','technician'])->where([['due_date','<',$today],['payment_status','=','pending']])->orderBy('created_at', 'desc');
-    return Datatables::of($invoices)
-    ->editColumn('customer_id', function($invoice) {
-      return $invoice->customer->name;
-    })
-    ->editColumn('vendor_id', function($invoice) {
-      return $invoice->technician->name;
-    })
-    ->editColumn('grand_total', function($invoice) {
-      return presentPrice($invoice->grand_total);
-    })
-    ->editColumn('payment_status', function($invoice) {
-      if ($invoice->payment_status == 'transfer') {
-        $transfer = 'Bank ' . $invoice->payment_status;
-        return title_case($transfer);
-      }
-      if ($invoice->payment_status == 'online') {
-        $online = $invoice->payment_status . ' Payment';
-        return title_case($online);
-      }
-      if ($invoice->payment_status == 'paid') {
-        $paid = $invoice->payment_status . ' Cash';
-        return title_case($paid);
-      }
-      return title_case($invoice->payment_status);
-    })
-    ->editColumn('created_at', function($invoice) {
-      return $invoice->created_at->diffForHumans();
-    })
-    ->addColumn('action', function ($invoice) {
-      return '<a href="'.route('account.show',$invoice->id).'" class="btn btn-warning btn-xs" data-toggle="tooltip" title="View"><i class="mdi mdi-eye"></i></a>
-      <a href="'.route('account.edit',$invoice).'" class="btn btn-info btn-xs" data-toggle="tooltip" title="Edit"><i class="mdi mdi-table-edit"></i></a>
-      <a href="#" data-id="'.$invoice->id.'" data-status="'.$invoice->payment_status.'" class="btn btn-dark btn-xs" data-toggle="modal" data-target="#pay" title="Pay"><i class="mdi mdi-cash"></i></a>
-      <form method="POST" action="'.route('account.destroy', $invoice).'" style="display: inline-block;">
-      <input type="hidden" name="_token" value="'.csrf_token().'">
-      <input type="hidden" name="_method" value="DELETE">
-      <a href="#" class="btn btn-danger btn-xs" onclick="var c = confirm(\'Are you sure you want to delete this record?\'); if(c == false) return false; else this.parentNode.submit();" class="text-decoration-none p2 display-block on-hover-no-decoration" data-toggle="tooltip" title="Delete" data-toggle="tooltip" title="Delete">
-      <i class="mdi mdi-delete"></i>
-      </a>
-      </form>';
-    })
-    ->rawColumns(['action'])
-    ->addIndexColumn()
-    ->make(true);
   }
 
   public function updateStatus(Request $request)

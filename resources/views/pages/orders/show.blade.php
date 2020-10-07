@@ -48,7 +48,7 @@
                                                 <th>Order Type</th>
                                                 <th>Service Location</th>
                                                 <th>Quantity</th>
-                                                <th>Actual Service Date</th>
+                                                <th>Service Date</th>
                                             </tr>
                                             <tr>
                                                 <td>{{ $order->service->name }}</td>
@@ -66,12 +66,12 @@
                                                 <td>{{ $order->customer->name }}</td>
                                                 <td>{{ $order->customer->telephone }}</td>
                                                 <td>{{ $order->payment_status }}</td>
-                                                <td>{{ title_case($order->status) }}</td>
+                                                <td>{{ ucwords($order->status) }}</td>
                                             </tr>
                                             <tr>
                                                 <th>Technician</th>
                                                 <th>Periodic Service Category</th>
-                                                <th>Due Service Date</th>
+                                                <th>Next Service Date</th>
                                                 <th>Problem Description</th>
                                             </tr>
                                             <tr>
@@ -79,6 +79,14 @@
                                                 <td>{{ $order->periodicServiceCategory->description }}</td>
                                                 <td>{{ $order->periodic_service_date }}</td>
                                                 <td>{{ $order->problem_description }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th colspan="2">Service Cost</th>
+                                                <th colspan="2">Other Expenses</th>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2">{{ presentPrice($order->cost) }}</td>
+                                                <td colspan="2">{{ presentPrice($order->other_cost) }}</td>
                                             </tr>
                                         </tbody>
                                     </table>

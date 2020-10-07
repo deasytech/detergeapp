@@ -52,7 +52,7 @@
                     </div>
                     <div class="form-group col-md-4">
                       <label for="type">Input Type</label>
-                      <input type="text" readonly value="{{ title_case($setting->type) }}" class="form-control">
+                      <input type="text" readonly value="{{ ucwords($setting->type) }}" class="form-control">
                     </div>
                   </div>
                   <div class="row">

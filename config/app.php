@@ -166,7 +166,8 @@ return [
         * Package Service Providers...
         */
         Yajra\DataTables\DataTablesServiceProvider::class,
-        Jimmyjs\ReportGenerator\ServiceProvider::class,
+        Yajra\DataTables\ButtonsServiceProvider::class,
+        Maatwebsite\Excel\ExcelServiceProvider::class,
         /*
         * Application Service Providers...
         */
@@ -228,9 +229,7 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
 
-        'PdfReport' => Jimmyjs\ReportGenerator\Facades\PdfReportFacade::class,
-        'ExcelReport' => Jimmyjs\ReportGenerator\Facades\ExcelReportFacade::class,
-        'CSVReport' => Jimmyjs\ReportGenerator\Facades\CSVReportFacade::class,
+        'Excel' => Maatwebsite\Excel\Facades\Excel::class,
 
     ],
 

@@ -8,14 +8,8 @@
   <div class="dashboard-main-wrapper">
     @include('includes.navbar')
     @include('includes.left_sidebar')
-    <!-- ============================================================== -->
-    <!-- wrapper  -->
-    <!-- ============================================================== -->
     <div class="dashboard-wrapper">
       <div class="container-fluid  dashboard-content">
-        <!-- ============================================================== -->
-        <!-- pageheader -->
-        <!-- ============================================================== -->
         <div class="row">
           <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             <div class="page-header">
@@ -31,54 +25,17 @@
             </div>
           </div>
         </div>
-        <!-- ============================================================== -->
-        <!-- end pageheader -->
-        <!-- ============================================================== -->
         <div class="row">
-          <!-- ============================================================== -->
-          <!-- data table  -->
-          <!-- ============================================================== -->
           <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             @include('notifications.alert')
             <div class="card">
-              <div class="card-header">
-                <a href="{{ route('account.create') }}" class="btn btn-sm btn-primary">Add New</a>
-              </div>
               <div class="card-body">
                 <div class="table-responsive">
-                  <table id="basic-datatable" class="table table-striped table-bordered" style="width:100%">
-                    <thead>
-                      <tr>
-                        <th>Invoice No.</th>
-                        <th>Grand Total</th>
-                        <th>Customer</th>
-                        <th>Technician</th>
-                        <th>Due Date</th>
-                        <th>Payment Status</th>
-                        <th>Created At</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tfoot>
-                      <tr>
-                        <th>Invoice No.</th>
-                        <th>Grand Total</th>
-                        <th>Customer</th>
-                        <th>Technician</th>
-                        <th>Due Date</th>
-                        <th>Payment Status</th>
-                        <th>Created At</th>
-                        <th>Action</th>
-                      </tr>
-                    </tfoot>
-                  </table>
+                  {!! $dataTable->table() !!}
                 </div>
               </div>
             </div>
           </div>
-          <!-- ============================================================== -->
-          <!-- end data table  -->
-          <!-- ============================================================== -->
         </div>
       </div>
       <div class="modal fade" id="pay" tabindex="-1" role="dialog" aria-labelledby="payLabel" aria-hidden="true">
@@ -129,44 +86,23 @@
   <script src="{{ asset('vendor/datatables/js/dataTables.bootstrap4.min.js') }}"></script>
   <script src="{{ asset('vendor/datatables/js/dataTables.buttons.min.js') }}"></script>
   <script src="{{ asset('vendor/datatables/js/buttons.bootstrap4.min.js') }}"></script>
-  <script src="{{ asset('vendor/datatables/js/jszip.min.js') }}"></script>
-  <script src="{{ asset('vendor/datatables/js/pdfmake.min.js') }}"></script>
-  <script src="{{ asset('vendor/datatables/js/vfs_fonts.js') }}"></script>
-  <script src="{{ asset('vendor/datatables/js/buttons.html5.min.js') }}"></script>
-  <script src="{{ asset('vendor/datatables/js/buttons.print.min.js') }}"></script>
-  <script src="{{ asset('vendor/datatables/js/buttons.colVis.min.js') }}"></script>
-  <script src="{{ asset('vendor/datatables/js/dataTables.select.min.js') }}"></script>
+  <script src="{{ asset('vendor/datatables/buttons.server-side.js') }}"></script>
   <script>
-  $(document).ready(function() {
-    $('#basic-datatable').DataTable({
-      processing: true,
-      serverSide: true,
-      ajax: '{!! route('ajax.accounts.overdue') !!}',
-      columns: [
-        { data: 'invoice_no', name: 'invoice_no' },
-        { data: 'grand_total', name: 'grand_total' },
-        { data: 'customer_id', name: 'customer_id' },
-        { data: 'vendor_id', name: 'vendor_id' },
-        { data: 'due_date', name: 'due_date' },
-        { data: 'payment_status', name: 'payment_status' },
-        { data: 'created_at', name: 'created_at' },
-        { data: 'action', name: 'action', orderable: false, searchable: false },
-      ]
+    $(document).ready(function() {
+      $('#pay').on('shown.bs.modal', function (event) {
+        var button = $(event.relatedTarget) // Button that triggered the modal
+        var id = button.data('id')
+        var status = button.data('status')
+        var modal = $(this)
+        modal.find('.modal-body input[name="id"]').val(id)
+
+        $(':radio').each(function(i,val) {
+          if(val.value == status) {
+            $('input[data-check='+status+']').prop("checked", true);
+          }
+        });
+      })
     });
-
-    $('#pay').on('shown.bs.modal', function (event) {
-      var button = $(event.relatedTarget) // Button that triggered the modal
-      var id = button.data('id')
-      var status = button.data('status')
-      var modal = $(this)
-      modal.find('.modal-body input[name="id"]').val(id)
-
-      $(':radio').each(function(i,val) {
-        if(val.value == status) {
-          $('input[data-check='+status+']').prop("checked", true);
-        }
-      });
-    })
-  });
   </script>
+  {!! $dataTable->scripts() !!}
 @endsection

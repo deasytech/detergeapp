@@ -73,7 +73,7 @@
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="form-group col-md-4">
+                                        <div class="form-group col-md-3">
                                             <label for="service_location">Service Location</label>
                                             <select class="form-control" name="service_location" required>
                                                 <option>Choose Option</option>
@@ -82,13 +82,17 @@
                                                 @endforeach
                                             </select>
                                         </div>
-                                        <div class="form-group col-md-4">
+                                        <div class="form-group col-md-3">
                                             <label for="service_day">Actual Service Date</label>
                                             <input type="date" name="actual_service_date" class="form-control" required value="{{ old('actual_service_date') }}">
                                         </div>
-                                        <div class="form-group col-md-4">
-                                            <label for="cost">Cost</label>
+                                        <div class="form-group col-md-3">
+                                            <label for="cost">Service Cost</label>
                                             <input id="cost" name="cost" type="text" required="" class="form-control" value="{{ old('cost') }}">
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <label for="other_cost">Other Expenses</label>
+                                            <input id="other_cost" name="other_cost" type="text" class="form-control" value="{{ old('other_cost') }}">
                                         </div>
                                     </div>
                                     <div class="row">

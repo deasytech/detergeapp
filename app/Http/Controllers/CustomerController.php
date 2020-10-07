@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Customer;
-use App\Invoice;
-use App\Order;
 use Illuminate\Http\Request;
 use Validator;
-use yajra\Datatables\Datatables;
 use Gate;
+use App\DataTables\CustomerDataTable;
+use App\DataTables\NewCustomerDataTable;
+use App\Order;
 
 class CustomerController extends Controller
 {
@@ -21,9 +21,9 @@ class CustomerController extends Controller
   *
   * @return \Illuminate\Http\Response
   */
-  public function index()
+  public function index(CustomerDataTable $dataTable)
   {
-    return view('pages.customers.index');
+    return $dataTable->render('pages.customers.index');
   }
 
   /**
@@ -69,7 +69,8 @@ class CustomerController extends Controller
   public function show($id)
   {
     $customer = Customer::findOrFail($id);
-    return view('pages.customers.show')->with(compact('customer'));
+    $services = Order::with('service','customer')->where('customer_id', $id)->get();
+    return view('pages.customers.show')->with(compact('customer', 'services'));
   }
 
   /**
@@ -123,7 +124,6 @@ class CustomerController extends Controller
   public function destroy($id)
   {
     $customer = Customer::where('id', $id)->first();
-    // dd($customer->invoices);
     if (Gate::denies('customer.delete', $customer)) {
       session()->flash('warning', 'You do not have permission to delete this customer');
       return redirect(route('customer.index'));
@@ -139,57 +139,8 @@ class CustomerController extends Controller
     return redirect()->route('customer.index');
   }
 
-  public function ajaxLoad()
+  public function newCustomers(NewCustomerDataTable $dataTable)
   {
-    $customer = Customer::with('customerType')->where('status','=',1)->orderBy('created_at','desc');
-    return Datatables::of($customer)
-    ->editColumn('status', function($customer) {
-      return $customer->status == 1 ? 'Active' : 'Inactive';
-    })
-    ->editColumn('customer_type_id', function($customer) {
-      return $customer->customerType->name;
-    })
-    ->addColumn('action', function ($customer) {
-      return '<a href="'.route('customer.show',$customer->id).'" class="btn btn-warning btn-xs" data-toggle="tooltip" title="View"><i class="mdi mdi-eye"></i></a>
-      <a href="'.route('customer.edit',$customer->id).'" class="btn btn-info btn-xs" data-toggle="tooltip" title="Edit"><i class="mdi mdi-table-edit"></i></a>
-      <form method="POST" action="'.route('customer.destroy', $customer->id).'" style="display: inline-block;">
-      <input type="hidden" name="_token" value="'.csrf_token().'">
-      <input type="hidden" name="_method" value="DELETE">
-      <a href="#" class="btn btn-danger btn-xs" onclick="var c = confirm(\'Are you sure you want to delete this record?\'); if(c == false) return false; else this.parentNode.submit();" class="text-decoration-none p2 display-block on-hover-no-decoration" data-toggle="tooltip" title="Delete" data-toggle="tooltip" title="Delete">
-      <i class="mdi mdi-delete"></i>
-      </a>
-      </form>
-      <a href="'.route('order.placement',$customer).'" class="btn btn-dark btn-xs" data-toggle="tooltip" title="Place Order"><i class="mdi mdi-cart"></i></a>';
-    })
-    ->rawColumns(['action'])
-    ->addIndexColumn()
-    ->make(true);
-  }
-
-  public function newCustomers()
-  {
-    $customer = Customer::with('customerType')->where('status','=',0)->orderBy('created_at','desc');
-    return Datatables::of($customer)
-    ->editColumn('status', function($customer) {
-      return $customer->status == 1 ? 'Active' : 'Inactive';
-    })
-    ->editColumn('customer_type_id', function($customer) {
-      return $customer->customerType->name;
-    })
-    ->addColumn('action', function ($customer) {
-      return '<a href="'.route('customer.show',$customer->id).'" class="btn btn-warning btn-xs" data-toggle="tooltip" title="View"><i class="mdi mdi-eye"></i></a>
-      <a href="'.route('customer.edit',$customer->id).'" class="btn btn-info btn-xs" data-toggle="tooltip" title="Edit"><i class="mdi mdi-table-edit"></i></a>
-      <form method="POST" action="'.route('customer.destroy', $customer->id).'" style="display: inline-block;">
-      <input type="hidden" name="_token" value="'.csrf_token().'">
-      <input type="hidden" name="_method" value="DELETE">
-      <a href="#" class="btn btn-danger btn-xs" onclick="var c = confirm(\'Are you sure you want to delete this record?\'); if(c == false) return false; else this.parentNode.submit();" class="text-decoration-none p2 display-block on-hover-no-decoration" data-toggle="tooltip" title="Delete" data-toggle="tooltip" title="Delete">
-      <i class="mdi mdi-delete"></i>
-      </a>
-      </form>
-      <a href="'.route('order.placement',$customer).'" class="btn btn-dark btn-xs" data-toggle="tooltip" title="Place Order"><i class="mdi mdi-cart"></i></a>';
-    })
-    ->rawColumns(['action'])
-    ->addIndexColumn()
-    ->make(true);
+    return $dataTable->render('pages.customers.new-customers');
   }
 }

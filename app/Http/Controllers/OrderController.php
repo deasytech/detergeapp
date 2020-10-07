@@ -8,6 +8,7 @@ use Validator;
 use yajra\Datatables\Datatables;
 use Gate;
 use App\Customer;
+use App\DataTables\OrderDataTable;
 use Carbon\Carbon;
 use App\PeriodicServiceCategory;
 use App\Invoice;
@@ -24,9 +25,9 @@ class OrderController extends Controller
   *
   * @return \Illuminate\Http\Response
   */
-  public function index()
+  public function index(OrderDataTable $dataTable)
   {
-    return view('pages.orders.index');
+    return $dataTable->render('pages.orders.index');
   }
 
   /**
@@ -172,40 +173,5 @@ class OrderController extends Controller
     $order->delete();
     session()->flash('success', 'Order Deleted');
     return redirect()->route('order.index');
-  }
-
-  public function ajaxLoad()
-  {
-    $order = Order::with(['customer','vendor','periodicServiceCategory'])->orderBy('created_at','desc');
-    return Datatables::of($order)
-    ->editColumn('vendor_id', function($order) {
-      return $order->vendor->name;
-    })
-    ->editColumn('customer_id', function($order) {
-      return $order->customer->name;
-    })
-    ->editColumn('telephone', function($order) {
-      return $order->customer->telephone;
-    })
-    ->editColumn('service_day', function($order) {
-      return ucfirst($order->service_day);
-    })
-    ->editColumn('status', function($order) {
-      return $order->status == 1 ? 'Active' : 'Inactive';
-    })
-    ->addColumn('action', function ($order) {
-      return '<a href="'.route('order.show',$order->id).'" class="btn btn-warning btn-xs" data-toggle="tooltip" title="View"><i class="mdi mdi-eye"></i></a>
-      <a href="'.route('order.edit',$order->id).'" class="btn btn-info btn-xs" data-toggle="tooltip" title="Edit"><i class="mdi mdi-table-edit"></i></a>
-      <form method="POST" action="'.route('order.destroy', $order->id).'" style="display: inline-block;">
-      <input type="hidden" name="_token" value="'.csrf_token().'">
-      <input type="hidden" name="_method" value="DELETE">
-      <a href="#" class="btn btn-danger btn-xs" onclick="var c = confirm(\'Are you sure you want to delete this record?\'); if(c == false) return false; else this.parentNode.submit();" class="text-decoration-none p2 display-block on-hover-no-decoration" data-toggle="tooltip" title="Delete" data-toggle="tooltip" title="Delete">
-      <i class="mdi mdi-delete"></i>
-      </a>
-      </form>';
-    })
-    ->rawColumns(['action'])
-    ->addIndexColumn()
-    ->make(true);
   }
 }

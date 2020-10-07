@@ -8,6 +8,7 @@ use App\Invoice;
 use App\User;
 use App\Customer;
 use Hash;
+use SebastianBergmann\Environment\Console;
 use Storage;
 
 class DashboardController extends Controller
@@ -29,10 +30,13 @@ class DashboardController extends Controller
   */
   public function index()
   {
+    // $monthly_due_date = [];
     $latest_orders = Order::orderBy('created_at','desc')->take(6)->get();
-    $sales = Invoice::where('payment_status','=','paid')->get()->sum('grand_total');
-    $top_customers = Invoice::with('customer')->where('payment_status','!=','pending')->orderBy('grand_total','desc')->take(8)->get();
-    return view('admin-dashboard', compact('latest_orders','sales','top_customers'));
+    $sales = Invoice::where('payment_status','!=','pending')->get()->sum('grand_total');
+    $top_customers = Invoice::with('customer')->where('payment_status','!=','pending')->orderBy('grand_total','desc')->take(10)->get();
+    $monthly_due_date = Order::with('customer')->whereBetween('periodic_service_date',[now()->firstOfMonth()->format('Y-m-d'), now()->lastOfMonth()->format('Y-m-d')])->orderBy('periodic_service_date','desc')->paginate(8);
+    $weekly_due_date = Order::with('customer')->whereBetween('periodic_service_date', [now()->format('Y-m-d'), now()->day(7)->format('Y-m-d')])->orderBy('periodic_service_date','desc')->paginate(8);
+    return view('admin-dashboard', compact('latest_orders','sales','top_customers','monthly_due_date','weekly_due_date'));
   }
 
   public function generalDashboard()
@@ -48,11 +52,10 @@ class DashboardController extends Controller
 
   public function avatar(Request $request) {
     if ($request->hasFile('avatar')) {
-      $image = $request->file('avatar');
-      $imageName = auth()->user()->id . "." . $image->getClientOriginalExtension();
-      Storage::disk('public')->delete("avatar/" . $imageName);
-      $request->file('avatar')->storeAs('public/avatar', $imageName);
-      return response(['success' => 'Avatar Uploaded']);
+      $imageName = auth()->user()->id . '.' . $request->avatar->extension();
+      @unlink("avatar/" . $imageName);
+      $request->avatar->move(public_path('avatar'), $imageName);
+      return response(['success' => 'Avatar Uploaded', 'avatar' => $imageName]);
     }
   }
 

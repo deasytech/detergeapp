@@ -9,6 +9,7 @@ use Gate;
 use yajra\Datatables\Datatables;
 use App\Note;
 use App\Customer;
+use App\DataTables\ProspectDataTable;
 
 class ProspectController extends Controller
 {
@@ -17,9 +18,9 @@ class ProspectController extends Controller
     *
     * @return \Illuminate\Http\Response
     */
-    public function index()
+    public function index(ProspectDataTable $dataTable)
     {
-        return view('pages.prospects.index');
+        return $dataTable->render('pages.prospects.index');
     }
 
     /**
@@ -178,27 +179,5 @@ class ProspectController extends Controller
         $prospect->delete();
         session()->flash('success', 'Prospect Deleted');
         return redirect()->route('prospect.index');
-    }
-
-    public function ajaxLoad()
-    {
-        $prospect = Prospect::with('notes')->orderBy('created_at','desc');
-        return Datatables::of($prospect)
-        ->addColumn('action', function ($prospect) {
-            return '<a href="#" class="btn btn-primary btn-xs" data-id="'.$prospect->id.'" data-toggle="modal" data-target="#feedback" title="Update Feedback"><i class="mdi mdi-comment-alert"></i></a>
-            <a href="'.route('prospect.show',$prospect->id).'" class="btn btn-warning btn-xs" data-toggle="tooltip" data-placement="top" title="View"><i class="mdi mdi-eye"></i></a>
-            <a href="'.route('prospect.edit',$prospect->id).'" class="btn btn-info btn-xs" data-toggle="tooltip" title="Edit"><i class="mdi mdi-table-edit"></i></a>
-            <form method="POST" action="'.route('prospect.destroy', $prospect->id).'" style="display: inline-block;">
-            <input type="hidden" name="_token" value="'.csrf_token().'">
-            <input type="hidden" name="_method" value="DELETE">
-            <a href="#" class="btn btn-danger btn-xs" onclick="var c = confirm(\'Are you sure you want to delete this record?\'); if(c == false) return false; else this.parentNode.submit();" class="text-decoration-none p2 display-block on-hover-no-decoration" data-toggle="tooltip" title="Delete" data-toggle="tooltip" title="Delete">
-            <i class="mdi mdi-delete"></i>
-            </a>
-            </form>
-            <a href="'.route('prospect.confirmed',$prospect).'" class="btn btn-success btn-xs" data-toggle="tooltip" title="Verified Customer"><i class="mdi mdi-account-check"></i></a>';
-        })
-        ->rawColumns(['action'])
-        ->addIndexColumn()
-        ->make(true);
     }
 }

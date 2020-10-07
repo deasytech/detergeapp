@@ -65,7 +65,7 @@
                                                 <th colspan="2">Date Added</th>
                                             </tr>
                                             <tr>
-                                                <td>{{ title_case($setting->type) }}</td>
+                                                <td>{{ ucwords($setting->type) }}</td>
                                                 <td colspan="2">{{ presentDate($setting->created_at) }}</td>
                                             </tr>
                                         </tbody>

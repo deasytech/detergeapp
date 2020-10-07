@@ -40,11 +40,11 @@ class LoginController extends Controller
 
     public function redirectTo()
     {
-        if (Auth::user()->hasRole('admin')) {
-            $this->redirectTo = '/dashboard';
-            return $this->redirectTo;
-        }
-        $this->redirectTo = '/dashboard/general';
+        // if (Auth::user()->hasRole('admin')) {
+        //     $this->redirectTo = '/dashboard';
+        //     return $this->redirectTo;
+        // }
+        $this->redirectTo = '/dashboard';
         return $this->redirectTo;
     }
 }

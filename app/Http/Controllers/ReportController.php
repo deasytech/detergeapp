@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\CustomersExport;
+use App\Exports\InvoiceExport;
+use App\Exports\VendorsExport;
+use App\Invoice;
+use App\Order;
 use Illuminate\Http\Request;
 
 class ReportController extends Controller
@@ -15,15 +20,23 @@ class ReportController extends Controller
     {
         return view('pages.settings.reports.index');
     }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    
+    public function exportInvoice($type,$from,$to)
     {
-        //
+        $format = $from . '_' . $to . '_' . $type;
+        return (new InvoiceExport($type, $from, $to))->download("invoice_$format.xlsx");
+    }
+    
+    public function exportCustomers($from,$to)
+    {
+        $format = $from . '_' . $to;
+        return (new CustomersExport($from, $to))->download("customer_$format.xlsx");
+    }
+    
+    public function exportVendors($from,$to,$name)
+    {
+        $format = $from . '_' . $to . '_' . $name;
+        return (new VendorsExport($from, $to, $name))->download("technician_$format.xlsx");
     }
 
     /**
@@ -34,51 +47,16 @@ class ReportController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
+        $results = [];
+        if ($request->type == 'invoices_report') {
+            $results = Invoice::with(['customer', 'technician'])->where('payment_status','=',$request->payment_status)->whereBetween('invoice_date',[$request->date_start,$request->date_end])->get();
+        } 
+        if ($request->type == 'customer_order_report') {
+            $results = Order::with(['customer', 'vendor', 'service'])->whereBetween('actual_service_date',[$request->date_start,$request->date_end])->get();
+        } 
+        if ($request->type == 'vendor_report') {
+            $results = Order::with(['customer', 'vendor', 'service'])->where('vendor_id','=',$request->technician)->whereBetween('actual_service_date',[$request->date_start,$request->date_end])->get();
+        } 
+        return view('pages.settings.reports.index', compact('results'));
     }
 }

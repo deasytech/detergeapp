@@ -142,7 +142,7 @@ class SettingController extends Controller
     $setting = Setting::query()->orderBy('display_name');
     return Datatables::of($setting)
     ->editColumn('type', function($setting) {
-      return title_case($setting->type);
+      return ucwords($setting->type);
     })
     ->editColumn('value', function($setting) {
       if(Storage::exists('/public/settings/'.$setting->value)) {

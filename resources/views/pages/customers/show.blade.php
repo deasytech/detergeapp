@@ -3,14 +3,8 @@
     <div class="dashboard-main-wrapper">
         @include('includes.navbar')
         @include('includes.left_sidebar')
-        <!-- ============================================================== -->
-        <!-- wrapper  -->
-        <!-- ============================================================== -->
         <div class="dashboard-wrapper">
             <div class="container-fluid  dashboard-content">
-                <!-- ============================================================== -->
-                <!-- pageheader -->
-                <!-- ============================================================== -->
                 <div class="row">
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div class="page-header">
@@ -27,13 +21,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- ============================================================== -->
-                <!-- end pageheader -->
-                <!-- ============================================================== -->
                 <div class="row">
-                    <!-- ============================================================== -->
-                    <!-- data table  -->
-                    <!-- ============================================================== -->
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         @include('notifications.alert')
                         <div class="card">
@@ -73,13 +61,16 @@
                                             </tr>
                                         </tbody>
                                     </table>
+                                    <h3 class="m-t-20">Service History</h3>
+                                    <ul>
+                                        @foreach ($services as $service)
+                                            <li><strong>Service Type: </strong> {{ $service->service->name }} | <strong>Service Date: </strong>{{ presentDate($service->actual_service_date) }} | <strong>Next Service Date: </strong>{{ presentDate($service->periodic_service_date)  }}</li>
+                                        @endforeach
+                                    </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <!-- ============================================================== -->
-                    <!-- end data table  -->
-                    <!-- ============================================================== -->
                 </div>
             </div>
             @include('includes.footer')
